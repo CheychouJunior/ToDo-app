@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:todo_app/util/dialog_box.dart";
 import "package:todo_app/util/todo_tile.dart";
 
 class HomePage extends StatefulWidget {
@@ -9,6 +10,50 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List toDoList = [
+    ["Make a tutorial", false],
+    ["Exercise", false]
+  ];
+
+  final _controller = TextEditingController();
+
+  // function for checkbox
+  checkBoxChanged(bool? value, int index) {
+    setState(() {
+      toDoList[index][1] = !toDoList[index][1];
+    });
+  }
+
+  // Save new task
+  void saveNewTask() {
+    setState(() {
+      toDoList.add([_controller.text, false]);
+      _controller.clear();
+    });
+    Navigator.of(context).pop();
+  }
+
+  // function to create a new task
+  void createNewTask() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return DialogBox(
+          controller: _controller,
+          onSave: saveNewTask,
+          onCancel: () => Navigator.of(context).pop(),
+        );
+      },
+    );
+  }
+
+  // function to delete a task
+  void deleteTask(int index) {
+    setState(() {
+      toDoList.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,29 +63,21 @@ class _HomePageState extends State<HomePage> {
         title: Center(child: Text("TO DO")),
         elevation: 0,
       ),
-      body: ListView(
-        children: [
-          ToDoTile(
-            taskName: "Make tutorial",
-            taskCompleted: false,
-            onChanged: (p0) {},
-          ),
-          ToDoTile(
-            taskName: "Do exercise",
-            taskCompleted: true,
-            onChanged: (p0) {},
-          ),
-          ToDoTile(
-            taskName: "Learn Maths",
-            taskCompleted: true,
-            onChanged: (p0) {},
-          ),
-          ToDoTile(
-            taskName: "Go and eat",
-            taskCompleted: false,
-            onChanged: (p0) {},
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: createNewTask,
+        child: Icon(Icons.add),
+        backgroundColor: Colors.yellow,
+      ),
+      body: ListView.builder(
+        itemCount: toDoList.length,
+        itemBuilder: (context, index) {
+          return ToDoTile(
+            taskName: toDoList[index][0],
+            taskCompleted: toDoList[index][1],
+            onChanged: (value) => checkBoxChanged(value, index),
+            deleteFunction: (context) => deleteTask(index),
+          );
+        },
       ),
     );
   }
